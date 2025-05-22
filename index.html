@@ -1,0 +1,2624 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>College Cafeteria App Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/three@0.151.3/build/three.min.js"></script>
+  <script src="https://unpkg.com/framer-motion@10.12.4/dist/framer-motion.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            },
+            secondary: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              300: '#c4b5fd',
+              400: '#a78bfa',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+              800: '#5b21b6',
+              900: '#4c1d95',
+            },
+            cafeteria: {
+              light: '#f97316',  // Orange for food theme
+              dark: '#ea580c',
+              accent: '#10b981', // Green for veg indication
+            }
+          },
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+            display: ['Playfair Display', 'serif'],
+          },
+          animation: {
+            'float': 'float 3s ease-in-out infinite',
+            'bounce-slow': 'bounce 3s infinite',
+            'spin-slow': 'spin 8s linear infinite',
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Enhanced animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    
+    @keyframes shimmer {
+      0% { background-position: -468px 0; }
+      100% { background-position: 468px 0; }
+    }
+    
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-3deg); }
+      50% { transform: rotate(3deg); }
+    }
+    
+    @keyframes jello {
+      0%, 11.1%, 100% { transform: none; }
+      22.2% { transform: skewX(-12.5deg) skewY(-12.5deg); }
+      33.3% { transform: skewX(6.25deg) skewY(6.25deg); }
+      44.4% { transform: skewX(-3.125deg) skewY(-3.125deg); }
+      55.5% { transform: skewX(1.5625deg) skewY(1.5625deg); }
+      66.6% { transform: skewX(-0.78125deg) skewY(-0.78125deg); }
+      77.7% { transform: skewX(0.390625deg) skewY(0.390625deg); }
+      88.8% { transform: skewX(-0.1953125deg) skewY(-0.1953125deg); }
+    }
+    
+    @keyframes heartbeat {
+      0% { transform: scale(1); }
+      25% { transform: scale(1.1); }
+      40% { transform: scale(1); }
+      60% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    
+    @keyframes flip {
+      0% { transform: perspective(400px) rotateY(0); }
+      100% { transform: perspective(400px) rotateY(360deg); }
+    }
+    
+    /* Animation classes */
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    .animate-pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .animate-spin-slow {
+      animation: spin-slow 8s linear infinite;
+    }
+    
+    .animate-bounce {
+      animation: bounce 2s ease-in-out infinite;
+    }
+    
+    .animate-shimmer {
+      background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 20%, rgba(255,255,255,0) 40%);
+      background-size: 936px 100%;
+      animation: shimmer 2s infinite linear;
+    }
+    
+    .animate-wiggle:hover {
+      animation: wiggle 0.5s ease-in-out;
+    }
+    
+    .animate-jello:hover {
+      animation: jello 0.8s both;
+    }
+    
+    .animate-heartbeat:hover {
+      animation: heartbeat 1.5s ease-in-out;
+    }
+    
+    .animate-flip {
+      animation: flip 2s linear infinite;
+      transform-style: preserve-3d;
+    }
+    
+    /* Menu item styling */
+    .menu-item {
+      border-radius: 0.5rem;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .menu-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    .menu-item-img {
+      height: 12rem;
+      width: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    
+    .menu-item:hover .menu-item-img {
+      transform: scale(1.1);
+    }
+    
+    /* Dark mode improvements */
+    .dark .menu-item {
+      background-color: #1f2937;
+      border-color: #374151;
+    }
+    
+    .dark .text-gray-600 {
+      color: #cbd5e1 !important; /* Lighter gray for better contrast */
+    }
+    
+    .dark .text-gray-700 {
+      color: #e2e8f0 !important; /* Even lighter for headings */
+    }
+    
+    .dark .text-gray-800 {
+      color: #f1f5f9 !important; /* Almost white for important text */
+    }
+    
+    .dark .text-gray-900 {
+      color: #f8fafc !important; /* White for primary text */
+    }
+    
+    /* Cart badge animation */
+    .cart-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background-color: #ef4444;
+      color: white;
+      font-size: 0.75rem;
+      height: 18px;
+      width: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      animation: pulse 2s infinite;
+    }
+    
+    /* 3D Food Scene */
+    #food-scene {
+      width: 100%;
+      height: 400px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 1rem;
+    }
+    
+    /* Button hover effects */
+    .hover-effect {
+      transition: all 0.3s ease;
+    }
+    
+    .hover-effect:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Food item hover effects */
+    .food-item-container {
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .food-item-container::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .food-item-container:hover::after {
+      opacity: 1;
+    }
+    
+    .food-item-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 1rem;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      z-index: 10;
+    }
+    
+    .food-item-container:hover .food-item-info {
+      transform: translateY(0);
+    }
+  </style>
+  <style>
+    :root {
+      --cafeteria-primary: #10B981;
+      --cafeteria-light: #34D399;
+      --cafeteria-dark: #059669;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    .dark {
+      color-scheme: dark;
+    }
+    
+    .bg-cafeteria-primary {
+      background-color: var(--cafeteria-primary);
+    }
+    
+    .bg-cafeteria-light {
+      background-color: var(--cafeteria-light);
+    }
+    
+    .bg-cafeteria-dark {
+      background-color: var(--cafeteria-dark);
+    }
+    
+    .text-cafeteria-primary {
+      color: var(--cafeteria-primary);
+    }
+    
+    .text-cafeteria-light {
+      color: var(--cafeteria-light);
+    }
+    
+    .text-cafeteria-dark {
+      color: var(--cafeteria-dark);
+    }
+    
+    .border-cafeteria-primary {
+      border-color: var(--cafeteria-primary);
+    }
+    
+    .menu-item-img {
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.25rem;
+    }
+
+    /* Animation for menu items */
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    
+    .animate-on-scroll.animated {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* Food item container animations */
+    .food-item-container {
+      transition: all 0.5s ease;
+    }
+    
+    .food-item-container:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    /* Custom animations */
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-3deg); }
+      75% { transform: rotate(3deg); }
+    }
+    
+    .animate-wiggle:hover {
+      animation: wiggle 0.5s ease-in-out;
+    }
+    
+    @keyframes heartbeat {
+      0% { transform: scale(1); }
+      14% { transform: scale(1.1); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.1); }
+      70% { transform: scale(1); }
+    }
+    
+    .animate-heartbeat:hover {
+      animation: heartbeat 1s ease-in-out;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    /* Hover effect for buttons */
+    .hover-effect:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Chatbot styles */
+    .chatbot-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+    
+    .chatbot-toggle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: var(--cafeteria-primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .chatbot-toggle:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+      animation: pulse 1.5s infinite;
+    }
+    
+    .chatbot-window {
+      position: absolute;
+      bottom: 70px;
+      right: 0;
+      width: 300px;
+      height: 400px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .dark .chatbot-window {
+      background-color: #1F2937;
+      color: white;
+    }
+    
+    .chatbot-header {
+      padding: 15px;
+      background-color: var(--cafeteria-primary);
+      color: white;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .chatbot-close {
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    
+    .chatbot-close:hover {
+      transform: scale(1.2);
+    }
+    
+    .chatbot-messages {
+      flex-grow: 1;
+      padding: 15px;
+      overflow-y: auto;
+    }
+    
+    .chatbot-input-container {
+      padding: 10px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+    }
+    
+    .dark .chatbot-input-container {
+      border-top-color: #374151;
+    }
+    
+    .chatbot-input {
+      flex-grow: 1;
+      padding: 8px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 20px;
+      outline: none;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .chatbot-input:focus {
+      border-color: var(--cafeteria-primary);
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+    
+    .dark .chatbot-input {
+      background-color: #374151;
+      border-color: #4B5563;
+      color: white;
+    }
+    
+    .chatbot-send {
+      background-color: var(--cafeteria-primary);
+      color: white;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-left: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    
+    .chatbot-send:hover {
+      transform: scale(1.1);
+      background-color: var(--cafeteria-dark);
+    }
+    
+    .message {
+      margin-bottom: 10px;
+      max-width: 80%;
+      padding: 8px 12px;
+      border-radius: 18px;
+      line-height: 1.4;
+      animation: messageAppear 0.3s ease-out;
+    }
+    
+    @keyframes messageAppear {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .user-message {
+      background-color: #E5E7EB;
+      color: #1F2937;
+      margin-left: auto;
+      border-bottom-right-radius: 4px;
+    }
+    
+    .dark .user-message {
+      background-color: #4B5563;
+      color: white;
+    }
+    
+    .bot-message {
+      background-color: var(--cafeteria-light);
+      color: white;
+      margin-right: auto;
+      border-bottom-left-radius: 4px;
+    }
+    
+    /* Cart badge */
+    .cart-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background-color: #EF4444;
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: bounce 1s ease infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+    
+    /* Order confirmation modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    .modal-content {
+      background-color: white;
+      border-radius: 10px;
+      max-width: 90%;
+      width: 500px;
+      padding: 20px;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+      animation: modalAppear 0.5s ease-out forwards;
+    }
+    
+    @keyframes modalAppear {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .dark .modal-content {
+      background-color: #1F2937;
+      color: white;
+    }
+    
+    .modal-overlay.active .modal-content {
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans transition-colors duration-300" id="app">
+  <!-- Enhanced Navbar with Icons -->
+  <nav class="bg-white dark:bg-gray-800 shadow-md p-4 sticky top-0 z-50 transition-colors duration-300">
+    <div class="container mx-auto">
+      <div class="flex justify-between items-center">
+        <!-- Logo - Optimized with preloaded icon -->
+        <a href="#" class="flex items-center space-x-2">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center bg-cafeteria-light text-white">
+            <img src="https://cdn-icons-png.flaticon.com/128/2276/2276931.png" alt="Cafeteria Logo" class="w-8 h-8" width="32" height="32" fetchpriority="high">
+          </div>
+          <span class="text-xl font-bold text-gray-800 dark:text-white transition-colors duration-300">College Cafeteria</span>
+        </a>
+
+        <!-- Desktop Navigation with Icons - Consistent styling -->
+        <div class="hidden md:flex items-center space-x-8">
+          <a href="#home" class="flex items-center space-x-1 text-gray-600 hover:text-cafeteria-light dark:text-gray-300 dark:hover:text-cafeteria-light transition-colors duration-300">
+            <img src="https://cdn-icons-png.flaticon.com/128/1946/1946488.png" alt="Home" class="w-5 h-5" width="20" height="20" loading="lazy">
+            <span>Home</span>
+          </a>
+          <a href="#menu" class="flex items-center space-x-1 text-gray-600 hover:text-cafeteria-light dark:text-gray-300 dark:hover:text-cafeteria-light transition-colors duration-300">
+            <img src="https://cdn-icons-png.flaticon.com/128/1046/1046857.png" alt="Menu" class="w-5 h-5" width="20" height="20" loading="lazy">
+            <span>Menu</span>
+          </a>
+          <a href="#cart" class="flex items-center space-x-1 text-gray-600 hover:text-cafeteria-light dark:text-gray-300 dark:hover:text-cafeteria-light transition-colors duration-300">
+            <img src="https://cdn-icons-png.flaticon.com/128/891/891462.png" alt="Cart" class="w-5 h-5" width="20" height="20" loading="lazy">
+            <span>Cart</span>
+          </a>
+          <a href="#orders" class="flex items-center space-x-1 text-gray-600 hover:text-cafeteria-light dark:text-gray-300 dark:hover:text-cafeteria-light transition-colors duration-300">
+            <img src="https://cdn-icons-png.flaticon.com/128/1170/1170678.png" alt="Orders" class="w-5 h-5" width="20" height="20" loading="lazy">
+            <span>Orders</span>
+          </a>
+        </div>
+        
+        <!-- Right side items -->
+        <div class="flex items-center space-x-4">
+          <!-- Cart icon -->
+          <div class="relative hover-effect">
+            <a href="#cart" class="block p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span class="cart-badge">3</span>
+            </a>
+          </div>
+          
+          <!-- Theme toggle -->
+          <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover-effect">
+            <!-- Sun icon (shown in dark mode) -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-300 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <!-- Moon icon (shown in light mode) -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          </button>
+          
+          <!-- Mobile menu button -->
+          <div class="md:hidden">
+            <button id="mobile-menu-button" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Mobile menu (hidden by default) -->
+      <div id="mobile-menu" class="md:hidden hidden mt-2 py-2 space-y-1 border-t dark:border-gray-700">
+        <a href="#home" class="block p-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+          <span>Home</span>
+        </a>
+        <a href="#menu" class="block p-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+          <span>Menu</span>
+        </a>
+        <a href="#orders" class="block p-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+          <span>Orders</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto">
+    <!-- Hero Section / Landing Page - Optimized for fast loading -->
+    <section id="home" class="relative py-16 px-4 dark:bg-gray-900 transition-colors duration-300 overflow-hidden">
+      <!-- Background elements with animations - lightweight and performant -->
+      <div class="absolute inset-0 overflow-hidden z-0 opacity-30">
+        <div class="absolute top-20 right-20 w-32 h-32 rounded-full bg-cafeteria-light/20 animate-float" style="animation-duration: 6s;"></div>
+        <div class="absolute bottom-40 left-10 w-24 h-24 rounded-full bg-cafeteria-light/10 animate-float" style="animation-duration: 8s; animation-delay: 1s;"></div>
+        <div class="absolute top-1/3 left-1/4 w-16 h-16 rounded-full bg-cafeteria-light/15 animate-float" style="animation-duration: 7s; animation-delay: 2s;"></div>
+        <div class="absolute bottom-1/4 right-1/3 w-20 h-20 rounded-full bg-cafeteria-light/10 animate-float" style="animation-duration: 9s; animation-delay: 3s;"></div>
+        <!-- Gradient overlay for visual interest -->
+        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-cafeteria-light/5 to-transparent opacity-30"></div>
+      </div>
+      
+      <div class="container mx-auto relative z-10">
+        <!-- Navigation Quick Links - Visual navigation with images -->
+        <div class="hidden md:flex justify-center mb-10 gap-6">
+          <a href="#menu" class="flex flex-col items-center group">
+            <div class="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center mb-2 group-hover:bg-cafeteria-light/10 transition-colors duration-300">
+              <img src="https://cdn-icons-png.flaticon.com/128/2276/2276931.png" alt="Menu" class="w-10 h-10" width="40" height="40" loading="lazy">
+            </div>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-cafeteria-light transition-colors duration-300">Our Menu</span>
+          </a>
+          <a href="#cart" class="flex flex-col items-center group">
+            <div class="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center mb-2 group-hover:bg-cafeteria-light/10 transition-colors duration-300">
+              <img src="https://cdn-icons-png.flaticon.com/128/891/891462.png" alt="Cart" class="w-10 h-10" width="40" height="40" loading="lazy">
+            </div>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-cafeteria-light transition-colors duration-300">Your Cart</span>
+          </a>
+          <a href="#orders" class="flex flex-col items-center group">
+            <div class="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center mb-2 group-hover:bg-cafeteria-light/10 transition-colors duration-300">
+              <img src="https://cdn-icons-png.flaticon.com/128/1170/1170678.png" alt="Orders" class="w-10 h-10" width="40" height="40" loading="lazy">
+            </div>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-cafeteria-light transition-colors duration-300">Track Orders</span>
+          </a>
+          <button id="open-chatbot" class="flex flex-col items-center group">
+            <div class="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center mb-2 group-hover:bg-cafeteria-light/10 transition-colors duration-300">
+              <img src="https://cdn-icons-png.flaticon.com/128/1041/1041916.png" alt="Chat" class="w-10 h-10" width="40" height="40" loading="lazy">
+            </div>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-cafeteria-light transition-colors duration-300">Chat Support</span>
+          </button>
+        </div>
+        
+        <div class="flex flex-col md:flex-row items-center justify-between gap-10">
+          <div class="flex-1">
+            <div class="mb-2 inline-block px-3 py-1 rounded-full bg-cafeteria-light/10 text-cafeteria-light dark:bg-cafeteria-dark/20">
+              <span class="text-sm font-medium">Quick & Easy Ordering</span>
+            </div>
+            
+            <h1 class="text-4xl md:text-5xl font-bold mb-6 dark:text-white transition-colors duration-300">
+              College Cafeteria
+              <span class="text-cafeteria-light"> Ordering App</span>
+            </h1>
+            
+            <p class="text-lg mb-8 text-gray-600 dark:text-gray-300 max-w-lg transition-colors duration-300">
+              Order your favorite meals from the college cafeteria with ease. 
+              Browse the menu, add items to your cart, and track your orders - all in one place.
+            </p>
+            
+            <div class="flex flex-wrap gap-4">
+              <a href="#menu" class="px-6 py-3 bg-cafeteria-light text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+                <img src="https://cdn-icons-png.flaticon.com/128/1046/1046857.png" alt="Menu" class="w-5 h-5" width="20" height="20" loading="lazy">
+                Browse Menu
+              </a>
+              <a href="#cart" class="px-6 py-3 bg-white text-cafeteria-light border border-cafeteria-light rounded-lg font-medium shadow hover:shadow-lg transition-all flex items-center gap-2 dark:bg-gray-800 dark:text-white dark:border-gray-600">
+                <img src="https://cdn-icons-png.flaticon.com/128/891/891462.png" alt="Cart" class="w-5 h-5" width="20" height="20" loading="lazy">
+                View Cart
+              </a>
+            </div>
+          </div>
+          
+          <div class="flex-1">
+            <div class="rounded-2xl overflow-hidden shadow-xl bg-white dark:bg-gray-800 transition-colors duration-300">
+              <!-- Ultra-optimized Food Scene with better image -->
+              <div class="relative h-80">
+                <img 
+                  src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=70" 
+                  alt="College Cafeteria Food" 
+                  class="w-full h-full object-cover"
+                  width="600" height="400"
+                  fetchpriority="high"
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="py-20 bg-white dark:bg-gray-800 transition-colors duration-300">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-16 animate-on-scroll" data-animation="fade-up">
+          <h2 class="text-3xl md:text-4xl font-display font-bold mb-4 dark:text-white">How It Works</h2>
+          <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            Our cafeteria app makes ordering food simple and convenient
+          </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 animate-on-scroll" data-animation="fade-up" style="pointer-events: auto;">
+          <!-- Feature 1 -->
+          <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-700 transition-colors duration-300 transform hover:-translate-y-2 animate-on-scroll" data-animation="fade-up" data-delay="0.1">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-white dark:bg-gray-800 shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-cafeteria-light" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold mb-2 dark:text-white">Browse Menu</h3>
+            <p class="text-gray-600 dark:text-gray-300">Explore our diverse menu with categories for snacks, main courses, and beverages.</p>
+          </div>
+          
+          <!-- Feature 2 -->
+          <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-700 transition-colors duration-300 transform hover:-translate-y-2 animate-on-scroll" data-animation="fade-up" data-delay="0.2">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-white dark:bg-gray-800 shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-cafeteria-light" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold mb-2 dark:text-white">Add to Cart</h3>
+            <p class="text-gray-600 dark:text-gray-300">Select your favorite items, customize quantities, and add them to your cart.</p>
+          </div>
+          
+          <!-- Feature 3 -->
+          <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-700 transition-colors duration-300 transform hover:-translate-y-2 animate-on-scroll" data-animation="fade-up" data-delay="0.3">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-white dark:bg-gray-800 shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-cafeteria-light" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold mb-2 dark:text-white">Track Orders</h3>
+            <p class="text-gray-600 dark:text-gray-300">Place your order and track its status from preparation to ready for pickup.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="py-20 dark:bg-gray-900 transition-colors duration-300">
+      <div class="container mx-auto px-4">
+        <div class="rounded-2xl bg-primary-50 dark:bg-gray-800 p-10 md:p-16 text-center max-w-4xl mx-auto animate-on-scroll" data-animation="fade-up">
+          <h2 class="text-3xl md:text-4xl font-display font-bold mb-6 dark:text-white">Ready to Order?</h2>
+          <p class="text-lg mb-8 text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            Explore our menu and satisfy your cravings with just a few clicks.
+          </p>
+          
+          <a
+            href="#menu"
+            class="inline-block px-8 py-4 bg-cafeteria-light text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all hover-effect"
+          >
+            Order Now
+          </a>
+        </div>
+      </div>
+    </section>
+    <!-- Menu Section -->
+    <section id="menu" class="py-16 px-4 dark:bg-gray-900 transition-colors duration-300" style="display: block !important;">
+      <div class="container mx-auto">
+        <div class="text-center mb-12" style="display: block !important;">
+          <h2 class="text-3xl md:text-4xl font-display font-bold mb-4 dark:text-white">Our Menu</h2>
+          <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            Explore our wide variety of delicious options
+          </p>
+        </div>
+        
+        <!-- Menu Filters -->
+        <div class="mb-10 flex flex-wrap justify-center gap-3" style="display: block !important;">
+          <button class="px-6 py-2 rounded-full bg-cafeteria-light text-white font-medium shadow-md hover-effect transition-all menu-filter-btn" data-filter="all">
+            All Items
+          </button>
+          <button class="px-6 py-2 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 hover-effect transition-all menu-filter-btn" data-filter="snack">
+            Snacks
+          </button>
+          <button class="px-6 py-2 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 hover-effect transition-all menu-filter-btn" data-filter="main">
+            Main Course
+          </button>
+          <button class="px-6 py-2 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 hover-effect transition-all menu-filter-btn" data-filter="beverage">
+            Beverages
+          </button>
+        </div>
+        
+        <!-- Search & Filters -->
+        <div class="mb-10 max-w-md mx-auto" style="display: block !important;">
+          <div class="relative">
+            <input 
+              type="text" 
+              placeholder="Search menu items..." 
+              class="w-full px-4 py-3 pl-12 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cafeteria-light"
+            >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+
+      <!-- Categories -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8" style="pointer-events: auto;">
+        <!-- Menu Item 1 - Burger -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg food-item-container" data-category="main" style="transform: none; position: relative; pointer-events: auto;">
+          <div class="relative">
+            <img 
+              src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+              alt="Classic Burger" 
+              class="w-full h-56 object-cover"
+            >
+            <div class="absolute top-4 right-4 bg-white dark:bg-gray-900 text-cafeteria-light font-bold px-3 py-1 rounded-full shadow-md">
+              ₹499
+            </div>
+          </div>
+          
+          <div class="p-6">
+            <div class="flex items-center mb-2">
+              <span class="text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 px-2 py-1 rounded-full mr-2">Veg</span>
+              <span class="text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100 px-2 py-1 rounded-full">Popular</span>
+            </div>
+            
+            <h3 class="text-xl font-bold mb-2 dark:text-white">Classic Burger</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+              Juicy beef patty with lettuce, tomato, cheese, and our special sauce. Served with crispy fries.
+            </p>
+            
+            <div class="flex items-center justify-between mt-4">
+              <span class="text-lg font-semibold text-gray-800 dark:text-white">₹499</span>
+              <label class="flex items-center cursor-pointer" style="z-index: 10; position: relative;">
+                <input type="checkbox" class="form-checkbox h-5 w-5 text-cafeteria-light rounded border-gray-300 focus:ring-cafeteria-light menu-item-checkbox" data-name="Classic Burger" data-price="499" data-image="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80">
+                <span class="ml-2 text-gray-700 dark:text-white">Add to Cart</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Menu Item 2 - Pizza -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg food-item-container" data-category="main" style="transform: none; position: relative; pointer-events: auto;">
+          <div class="relative">
+            <img 
+              src="https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+              alt="Margherita Pizza" 
+              class="w-full h-56 object-cover"
+            >
+            <div class="absolute top-4 right-4 bg-white dark:bg-gray-900 text-cafeteria-light font-bold px-3 py-1 rounded-full shadow-md">
+              ₹699
+            </div>
+          </div>
+          
+          <div class="p-6">
+            <div class="flex items-center mb-2">
+              <span class="text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 px-2 py-1 rounded-full mr-2">Veg</span>
+              <span class="text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100 px-2 py-1 rounded-full">Bestseller</span>
+            </div>
+            
+            <h3 class="text-xl font-bold mb-2 dark:text-white">Margherita Pizza</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+              Classic pizza with tomato sauce, fresh mozzarella, basil leaves, and a drizzle of olive oil.
+            </p>
+            
+            <div class="flex items-center justify-between mt-4">
+              <span class="text-lg font-semibold text-gray-800 dark:text-white">₹699</span>
+              <label class="flex items-center cursor-pointer" style="z-index: 10; position: relative;">
+                <input type="checkbox" class="form-checkbox h-5 w-5 text-cafeteria-light rounded border-gray-300 focus:ring-cafeteria-light menu-item-checkbox" data-name="Margherita Pizza" data-price="699" data-image="https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80">
+                <span class="ml-2 text-gray-700 dark:text-white">Add to Cart</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Menu Item 3 - Cappuccino -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg food-item-container" data-category="beverage" style="transform: none; position: relative; pointer-events: auto;">
+          <div class="relative">
+            <img 
+              src="https://images.unsplash.com/photo-1534778101976-62847782c213?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+              alt="Cappuccino" 
+              class="w-full h-56 object-cover"
+            >
+            <div class="absolute top-4 right-4 bg-white dark:bg-gray-900 text-cafeteria-light font-bold px-3 py-1 rounded-full shadow-md">
+              ₹699
+            </div>
+          </div>
+          
+          <div class="p-6">
+            <div class="flex items-center mb-2">
+              <span class="text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 px-2 py-1 rounded-full mr-2">Veg</span>
+              <span class="text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 px-2 py-1 rounded-full">New</span>
+            </div>
+            
+            <h3 class="text-xl font-bold mb-2 dark:text-white">Cappuccino</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+              Rich espresso with steamed milk and a layer of foamy milk. Served with a chocolate biscotti.
+            </p>
+            
+            <div class="flex items-center justify-between mt-4">
+              <span class="text-lg font-semibold text-gray-800 dark:text-white">₹299</span>
+              <label class="flex items-center cursor-pointer" style="z-index: 10; position: relative;">
+                <input type="checkbox" class="form-checkbox h-5 w-5 text-cafeteria-light rounded border-gray-300 focus:ring-cafeteria-light menu-item-checkbox" data-name="Cappuccino" data-price="299" data-image="https://images.unsplash.com/photo-1534778101976-62847782c213?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80">
+                <span class="ml-2 text-gray-700 dark:text-white">Add to Cart</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Menu Item 4 - Samosa -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg food-item-container" data-category="snack" style="transform: none; position: relative; pointer-events: auto;">
+          <div class="relative">
+            <img 
+              src="https://images.unsplash.com/photo-1601050690597-df0568f70950?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+              alt="Samosa" 
+              class="w-full h-56 object-cover"
+            >
+            <div class="absolute top-4 right-4 bg-white dark:bg-gray-900 text-cafeteria-light font-bold px-3 py-1 rounded-full shadow-md">
+              ₹699
+            </div>
+          </div>
+          
+          <div class="p-6">
+            <div class="flex items-center mb-2">
+              <span class="text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 px-2 py-1 rounded-full mr-2">Veg</span>
+              <span class="text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100 px-2 py-1 rounded-full">Spicy</span>
+            </div>
+            
+            <h3 class="text-xl font-bold mb-2 dark:text-white">Crispy Samosa</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+              Triangular pastry filled with spiced potatoes, peas, and aromatic spices. Served with mint chutney.
+            </p>
+            
+            <div class="flex items-center justify-between mt-4">
+              <span class="text-lg font-semibold text-gray-800 dark:text-white">₹249</span>
+              <label class="flex items-center cursor-pointer" style="z-index: 10; position: relative;">
+                <input type="checkbox" class="form-checkbox h-5 w-5 text-cafeteria-light rounded border-gray-300 focus:ring-cafeteria-light menu-item-checkbox" data-name="Samosa" data-price="249" data-image="https://images.unsplash.com/photo-1601050690597-df0568f70950?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80">
+                <span class="ml-2 text-gray-700 dark:text-white">Add to Cart</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Menu Item 5 - Pasta -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg food-item-container" data-category="main" style="transform: none; position: relative; pointer-events: auto;">
+          <div class="relative">
+            <img 
+              src="https://images.unsplash.com/photo-1563379926898-05f4575a45d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+              alt="Pasta Alfredo" 
+              class="w-full h-56 object-cover"
+            >
+            <div class="absolute top-4 right-4 bg-white dark:bg-gray-900 text-cafeteria-light font-bold px-3 py-1 rounded-full shadow-md">
+              ₹699
+            </div>
+          </div>
+          
+          <div class="p-6">
+            <div class="flex items-center mb-2">
+              <span class="text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 px-2 py-1 rounded-full mr-2">Veg</span>
+              <span class="text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-100 px-2 py-1 rounded-full">Chef's Special</span>
+            </div>
+            
+            <h3 class="text-xl font-bold mb-2 dark:text-white">Pasta Alfredo</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+              Creamy fettuccine pasta with parmesan cheese sauce, topped with fresh herbs and black pepper.
+            </p>
+            
+            <div class="flex items-center justify-between mt-4">
+              <span class="text-lg font-semibold text-gray-800 dark:text-white">₹649</span>
+              <label class="flex items-center cursor-pointer" style="z-index: 10; position: relative;">
+                <input type="checkbox" class="form-checkbox h-5 w-5 text-cafeteria-light rounded border-gray-300 focus:ring-cafeteria-light menu-item-checkbox" data-name="Pasta Alfredo" data-price="649" data-image="https://images.unsplash.com/photo-1563379926898-05f4575a45d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80">
+                <span class="ml-2 text-gray-700 dark:text-white">Add to Cart</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Menu Item 6 - Smoothie (Fixed image with better quality) -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg food-item-container" data-category="beverage" style="transform: none; position: relative; pointer-events: auto;">
+          <div class="relative">
+            <img 
+              src="https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" 
+              alt="Berry Smoothie" 
+              class="w-full h-56 object-cover"
+              width="600" height="400"
+              fetchpriority="high"
+            >
+            <div class="absolute top-4 right-4 bg-white dark:bg-gray-900 text-cafeteria-light font-bold px-3 py-1 rounded-full shadow-md">
+              ₹349
+            </div>
+          </div>
+          
+          <div class="p-6">
+            <div class="flex items-center mb-2">
+              <span class="text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 px-2 py-1 rounded-full mr-2">Veg</span>
+              <span class="text-xs font-medium bg-pink-100 dark:bg-pink-900 text-pink-800 dark:text-pink-100 px-2 py-1 rounded-full">Healthy</span>
+            </div>
+            
+            <h3 class="text-xl font-bold mb-2 dark:text-white">Berry Smoothie</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+              Fresh mixed berries blended with yogurt and honey.
+            </p>
+            
+            <div class="flex items-center justify-between mt-4">
+              <span class="text-lg font-semibold text-gray-800 dark:text-white">₹349</span>
+              <label class="flex items-center cursor-pointer" style="z-index: 10; position: relative;">
+                <input type="checkbox" class="form-checkbox h-5 w-5 text-cafeteria-light rounded border-gray-300 focus:ring-cafeteria-light menu-item-checkbox" data-name="Berry Smoothie" data-price="349" data-image="https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80">
+                <span class="ml-2 text-gray-700 dark:text-white">Add to Cart</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Menu Item 5 - Paneer Butter Masala -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg food-item-container" data-category="main" style="transform: none; position: relative; pointer-events: auto;">
+            <div class="relative">
+              <img 
+                src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" 
+                alt="Paneer Butter Masala" 
+                class="w-full h-56 object-cover"
+                width="600" height="400"
+              >
+              <div class="absolute top-4 right-4 bg-white dark:bg-gray-900 text-cafeteria-light font-bold px-3 py-1 rounded-full shadow-md">
+                ₹599
+              </div>
+            </div>
+            
+            <div class="p-6">
+              <div class="flex items-center mb-2">
+                <span class="text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 px-2 py-1 rounded-full mr-2">Veg</span>
+                <span class="text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100 px-2 py-1 rounded-full">Spicy</span>
+              </div>
+              
+              <h3 class="text-xl font-bold mb-2 dark:text-white">Paneer Butter Masala</h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+                Creamy cottage cheese curry in a rich tomato and butter sauce. Served with naan bread.
+              </p>
+              
+              <div class="flex items-center justify-between mt-4">
+                <span class="text-lg font-semibold text-gray-800 dark:text-white">₹599</span>
+                <label class="flex items-center cursor-pointer" style="z-index: 10; position: relative;">
+                  <input type="checkbox" class="form-checkbox h-5 w-5 text-cafeteria-light rounded border-gray-300 focus:ring-cafeteria-light menu-item-checkbox" data-name="Paneer Butter Masala" data-price="599" data-image="https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80">
+                  <span class="ml-2 text-gray-700 dark:text-white">Add to Cart</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cart Section -->
+    <section id="cart" class="hidden py-16 px-4 dark:bg-gray-900 transition-colors duration-300">
+      <div class="container mx-auto">
+        <div class="text-center mb-8 animate-on-scroll" data-animation="fade-up">
+          <h2 class="text-3xl md:text-4xl font-display font-bold mb-4 dark:text-white">Your Cart</h2>
+          <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            Review your items and proceed to checkout
+          </p>
+        </div>
+        
+        <!-- Empty cart message (shown when cart is empty) -->
+        <div id="empty-cart-message" class="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-md transition-colors duration-300 animate-on-scroll" data-animation="fade-up">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <h3 class="text-xl font-bold mb-2 dark:text-white">Your cart is empty</h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-6">Looks like you haven't added any items to your cart yet.</p>
+          <a href="#menu" class="inline-block px-6 py-3 bg-cafeteria-light text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all hover-effect">
+            Browse Menu
+          </a>
+        </div>
+        
+        <!-- Cart items (shown when cart has items) -->
+        <div id="cart-items-container" class="hidden">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-colors duration-300 animate-on-scroll" data-animation="fade-up">
+            <div class="p-4 border-b dark:border-gray-700">
+              <h3 class="font-semibold text-lg dark:text-white">Cart Items</h3>
+            </div>
+            
+            <!-- Cart items list -->
+            <div id="cart-items" class="divide-y dark:divide-gray-700">              
+              <!-- Cart items will be dynamically inserted here -->
+            </div>
+            
+            <!-- Cart summary -->
+            <div class="p-6 bg-gray-50 dark:bg-gray-700 border-t dark:border-gray-600 transition-colors duration-300">
+              <div class="flex justify-between mb-2">
+                <span class="dark:text-gray-300">Subtotal:</span>
+                <span id="cart-subtotal" class="dark:text-white font-medium">₹0</span>
+              </div>
+              <div class="flex justify-between mb-4">
+                <span class="dark:text-gray-300">Tax (5%):</span>
+                <span id="cart-tax" class="dark:text-white font-medium">₹0</span>
+              </div>
+              <div class="flex justify-between font-bold text-lg">
+                <span class="dark:text-white">Total:</span>
+                <span id="cart-total" class="dark:text-white">₹0</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-8 flex justify-end animate-on-scroll" data-animation="fade-up" data-delay="0.2">
+            <button id="place-order-btn" class="bg-cafeteria-light text-white px-8 py-3 rounded-lg font-medium hover:bg-cafeteria-dark transition-all hover-effect flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Place Order</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Order confirmation modal (hidden by default) -->
+        <div id="order-confirmation" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl transition-colors duration-300">
+            <div class="text-center">
+              <div class="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600 dark:text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-2 dark:text-white">Order Placed Successfully!</h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-6">Your order has been received and is being prepared. You can track its status in the Orders section.</p>
+              <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button id="view-orders-btn" class="px-6 py-2 bg-cafeteria-light text-white rounded-lg font-medium transition-all hover-effect">
+                  View Orders
+                </button>
+                <button id="close-confirmation-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg font-medium transition-all hover-effect">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Orders Section -->
+    <section id="orders" class="hidden py-16 px-4 dark:bg-gray-900 transition-colors duration-300">
+      <div class="container mx-auto">
+        <div class="text-center mb-8 animate-on-scroll" data-animation="fade-up">
+          <h2 class="text-3xl md:text-4xl font-display font-bold mb-4 dark:text-white">My Orders</h2>
+          <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            Track the status of your current and past orders
+          </p>
+        </div>
+        
+        <!-- Empty orders message -->
+        <div id="empty-orders-message" class="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-md transition-colors duration-300 animate-on-scroll" data-animation="fade-up">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <h3 class="text-xl font-bold mb-2 dark:text-white">No orders yet</h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-6">You haven't placed any orders yet. Browse our menu and place your first order!</p>
+          <a href="#menu" class="inline-block px-6 py-3 bg-cafeteria-light text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all hover-effect">
+            Browse Menu
+          </a>
+        </div>
+        
+        <!-- Orders list -->
+        <div id="orders-container" class="space-y-6 hidden">
+          <!-- Orders will be dynamically inserted here -->
+        </div>
+      </div>
+    </section>
+  </main>
+  <!-- Footer with Contact Information -->
+  <footer class="bg-white dark:bg-gray-800 shadow-inner py-10 mt-16 transition-colors duration-300">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8" style="pointer-events: auto;">
+        <!-- About Section -->
+        <div>
+          <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">About College Cafeteria</h3>
+          <p class="text-gray-600 dark:text-gray-300 mb-4">
+            Our mission is to provide delicious, nutritious meals to college students with a convenient ordering experience.
+          </p>
+          <div class="flex space-x-4">
+            <a href="https://github.com/" target="_blank" class="text-cafeteria-light hover:text-cafeteria-dark transition-colors duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            </a>
+            <a href="https://linkedin.com/" target="_blank" class="text-cafeteria-light hover:text-cafeteria-dark transition-colors duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            </a>
+          </div>
+        </div>
+        
+        <!-- Quick Links -->
+        <div>
+          <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">Quick Links</h3>
+          <ul class="space-y-2">
+            <li><a href="#home" class="text-gray-600 dark:text-gray-300 hover:text-cafeteria-light dark:hover:text-cafeteria-light transition-colors duration-300">Home</a></li>
+            <li><a href="#menu" class="text-gray-600 dark:text-gray-300 hover:text-cafeteria-light dark:hover:text-cafeteria-light transition-colors duration-300">Menu</a></li>
+            <li><a href="#cart" class="text-gray-600 dark:text-gray-300 hover:text-cafeteria-light dark:hover:text-cafeteria-light transition-colors duration-300">Cart</a></li>
+            <li><a href="#orders" class="text-gray-600 dark:text-gray-300 hover:text-cafeteria-light dark:hover:text-cafeteria-light transition-colors duration-300">Orders</a></li>
+          </ul>
+        </div>
+        
+        <!-- Contact Info -->
+        <div>
+          <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">Contact Me</h3>
+          <p class="text-gray-600 dark:text-gray-300 mb-2">Aradhya Avhad</p>
+          <p class="text-gray-600 dark:text-gray-300 mb-2">Email: <a href="mailto:avhadaradhya@gmail.com" class="hover:text-cafeteria-light transition-colors duration-300">avhadaradhya@gmail.com</a></p>
+          <p class="text-gray-600 dark:text-gray-300 mb-4">GitHub: <a href="https://github.com/avhadaradhya" target="_blank" class="hover:text-cafeteria-light transition-colors duration-300">github.com/avhadaradhya</a></p>
+          <p class="text-gray-600 dark:text-gray-300">LinkedIn: <a href="https://www.linkedin.com/in/aradhya-avhad-800552327" target="_blank" class="hover:text-cafeteria-light transition-colors duration-300">linkedin.com/in/aradhya-avhad-800552327</a></p>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-8 text-center text-gray-600 dark:text-gray-400">
+        <p>© 2025 College Cafeteria App. All rights reserved.</p>
+        <p class="mt-2"><a href="#" id="footer-chat-link" class="text-cafeteria-light hover:underline">Need help? Chat with us!</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Chatbot Button -->
+  <div class="fixed bottom-4 right-4 z-50">
+    <button id="chatbot-toggle" class="bg-cafeteria-light text-white p-3 rounded-full shadow-lg hover:bg-cafeteria-dark focus:outline-none focus:ring-2 focus:ring-cafeteria-light focus:ring-offset-2 transition-all duration-300">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+      </svg>
+    </button>
+
+    <div id="chatbot-window" class="hidden fixed bottom-20 right-4 w-80 md:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl flex flex-col z-40 max-h-[70vh] transition-colors duration-300">
+      <div class="bg-cafeteria-light text-white p-3 rounded-t-lg flex justify-between items-center">
+        <h2 class="font-medium">Cafeteria Assistant</h2>
+        <button id="chatbot-close" class="text-white hover:text-gray-200 focus:outline-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+      
+      <div id="chatbot-messages" class="flex-1 p-3 overflow-y-auto" style="max-height: 50vh;">
+        <div class="my-2 flex justify-start">
+          <div class="max-w-[80%] p-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none">
+            Hi! How can I help you today?
+          </div>
+        </div>
+      </div>
+      
+      <div class="p-3 border-t dark:border-gray-700">
+        <form id="chatbot-form" class="flex">
+          <input 
+            id="chatbot-input"
+            type="text"
+            class="flex-grow border border-gray-300 dark:border-gray-600 rounded-l-lg p-2 focus:outline-none focus:ring-2 focus:ring-cafeteria-light bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300"
+            placeholder="Type a message..."
+          />
+          <button type="submit" class="bg-cafeteria-light text-white px-4 py-2 rounded-r-lg hover:bg-cafeteria-dark focus:outline-none focus:ring-2 focus:ring-cafeteria-light transition-all duration-300 hover-effect">
+            Send
+          </button>
+        </form>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          Try asking: "How do I order?" or "Show me the menu"
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const mobileMenuBtn = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const chatbotToggle = document.getElementById('chatbot-toggle');
+    const chatbotWindow = document.getElementById('chatbot-window');
+    const chatbotClose = document.getElementById('chatbot-close');
+    const chatbotMessages = document.querySelector('#chatbot-window .overflow-y-auto');
+    const app = document.getElementById('app');
+    const cartBadge = document.querySelector('.cart-badge');
+    const menuSections = document.querySelectorAll('main > section');
+    
+    // Initialize scroll animations - selectively applied to non-menu sections
+    function initScrollAnimations() {
+      const animatedElements = document.querySelectorAll('.animate-on-scroll');
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const el = entry.target;
+            // Skip animation for menu section to prevent interference with checkboxes
+            if (el.closest('#menu')) {
+              return;
+            }
+            
+            const animation = el.dataset.animation || 'fade-up';
+            const delay = el.dataset.delay || '0';
+            
+            el.classList.add('animated');
+            el.style.animationDelay = delay + 's';
+            
+            // Remove from observation once animated
+            observer.unobserve(el);
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      });
+      
+      animatedElements.forEach(el => {
+        observer.observe(el);
+      });
+    }
+    
+    // Initialize cart
+    let cart = JSON.parse(localStorage.getItem('cafeteria-cart')) || [];
+    updateCartBadge();
+    
+    // Enhanced Theme Management with animations
+    function initTheme() {
+      // Check for saved theme preference or use user's system preference
+      const savedTheme = localStorage.getItem('cafeteria-theme');
+      const themeToggleBtn = document.getElementById('theme-toggle');
+      const moonIcon = themeToggleBtn ? themeToggleBtn.querySelector('.moon-icon') : null;
+      const sunIcon = themeToggleBtn ? themeToggleBtn.querySelector('.sun-icon') : null;
+      
+      if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        document.body.classList.add('bg-gray-900');
+        document.body.classList.remove('bg-gray-50');
+        
+        // Update icons if they exist
+        if (moonIcon && sunIcon) {
+          moonIcon.classList.add('hidden');
+          sunIcon.classList.remove('hidden');
+        }
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.body.classList.add('bg-gray-50');
+        document.body.classList.remove('bg-gray-900');
+        
+        // Update icons if they exist
+        if (moonIcon && sunIcon) {
+          moonIcon.classList.remove('hidden');
+          sunIcon.classList.add('hidden');
+        }
+      }
+    }
+    
+    function toggleTheme() {
+      const themeToggleBtn = document.getElementById('theme-toggle');
+      const moonIcon = themeToggleBtn ? themeToggleBtn.querySelector('.moon-icon') : null;
+      const sunIcon = themeToggleBtn ? themeToggleBtn.querySelector('.sun-icon') : null;
+      
+      // Add rotation animation to the toggle button
+      if (themeToggleBtn) {
+        themeToggleBtn.classList.add('animate-spin-slow');
+        setTimeout(() => {
+          themeToggleBtn.classList.remove('animate-spin-slow');
+        }, 500);
+      }
+      
+      if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        document.body.classList.add('bg-gray-50');
+        document.body.classList.remove('bg-gray-900');
+        localStorage.setItem('cafeteria-theme', 'light');
+        
+        // Update icons if they exist
+        if (moonIcon && sunIcon) {
+          moonIcon.classList.remove('hidden');
+          sunIcon.classList.add('hidden');
+        }
+      } else {
+        document.documentElement.classList.add('dark');
+        document.body.classList.add('bg-gray-900');
+        document.body.classList.remove('bg-gray-50');
+        localStorage.setItem('cafeteria-theme', 'dark');
+        
+        // Update icons if they exist
+        if (moonIcon && sunIcon) {
+          moonIcon.classList.add('hidden');
+          sunIcon.classList.remove('hidden');
+        }
+      }
+      
+      // Animate all food items when theme changes
+      const foodItems = document.querySelectorAll('.food-item-container');
+      foodItems.forEach((item, index) => {
+        setTimeout(() => {
+          item.classList.add('animate-float');
+          setTimeout(() => {
+            item.classList.remove('animate-float');
+          }, 1500);
+        }, index * 100);
+      });
+    }
+    
+    // Initialize theme on page load
+    initTheme();
+    
+    // Cart Management
+    function updateCartBadge() {
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      if (cartBadge) {
+        cartBadge.textContent = totalItems;
+        cartBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+      }
+    }
+    
+    function addToCart(name, price, image) {
+      // Check if item already exists in cart
+      const existingItem = cart.find(item => item.name === name);
+      
+      if (existingItem) {
+        existingItem.quantity += 1;
+        showToast(`Added another ${name} to your cart`, 'success');
+      } else {
+        // Create a unique ID for the item - ensure it's a string that won't be 'undefined'
+        const id = name.replace(/\s+/g, '-').toLowerCase() + '-' + Date.now().toString(36);
+        
+        cart.push({
+          id,
+          name,
+          price,
+          image,
+          quantity: 1
+        });
+        
+        showToast(`Added ${name} to your cart`, 'success');
+      }
+      
+      // Save to localStorage
+      localStorage.setItem('cafeteria-cart', JSON.stringify(cart));
+      
+      // Update cart badge
+      updateCartBadge();
+      
+      // Update checkboxes to reflect cart state
+      updateCheckboxesFromCart();
+    }
+    
+    // Toast Notification
+    function showToast(message) {
+      // Remove existing toasts
+      const existingToasts = document.querySelectorAll('.toast-notification');
+      existingToasts.forEach(toast => toast.remove());
+      
+      // Create new toast
+      const toast = document.createElement('div');
+      toast.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-cafeteria-light text-white px-6 py-3 rounded-lg shadow-lg z-50 toast-notification';
+      toast.textContent = message;
+      
+      document.body.appendChild(toast);
+      
+      // Remove toast after 3 seconds
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => {
+          if (toast.parentNode) {
+            document.body.removeChild(toast);
+          }
+        }, 300);
+      }, 3000);
+    }
+    
+    // Enhanced Chatbot functionality with animations
+    function handleChatbotSubmit(e) {
+      if (e) e.preventDefault();
+      
+      const chatbotInput = document.querySelector('#chatbot-window input[type="text"]');
+      const message = chatbotInput.value.trim();
+      if (!message) return;
+      
+      // Add user message with animation
+      addChatMessage('user', message);
+      chatbotInput.value = '';
+      
+      // Show typing indicator
+      const typingIndicator = document.createElement('div');
+      typingIndicator.className = 'my-2 flex justify-start typing-indicator';
+      
+      const bubble = document.createElement('div');
+      bubble.className = 'max-w-[80%] p-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-none flex items-center';
+      bubble.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+      
+      // Add typing animation styles if not already added
+      if (!document.querySelector('#typing-animation-style')) {
+        const style = document.createElement('style');
+        style.id = 'typing-animation-style';
+        style.textContent = `
+          .typing-indicator .dot {
+            width: 8px;
+            height: 8px;
+            background-color: #6B7280;
+            border-radius: 50%;
+            margin: 0 2px;
+            display: inline-block;
+            animation: typing-animation 1.4s infinite ease-in-out both;
+          }
+          .dark .typing-indicator .dot {
+            background-color: #9CA3AF;
+          }
+          .typing-indicator .dot:nth-child(1) {
+            animation-delay: 0s;
+          }
+          .typing-indicator .dot:nth-child(2) {
+            animation-delay: 0.2s;
+          }
+          .typing-indicator .dot:nth-child(3) {
+            animation-delay: 0.4s;
+          }
+          @keyframes typing-animation {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.6; }
+            40% { transform: scale(1); opacity: 1; }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+      
+      typingIndicator.appendChild(bubble);
+      chatbotMessages.appendChild(typingIndicator);
+      
+      // Scroll to bottom
+      chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+      
+      // Process the message and respond after a realistic delay
+      setTimeout(() => {
+        // Remove typing indicator
+        chatbotMessages.removeChild(typingIndicator);
+        
+        const response = getChatbotResponse(message.toLowerCase());
+        addChatMessage('bot', response);
+      }, 1200 + Math.random() * 800); // Random delay between 1.2-2 seconds for more natural feel
+    }
+    
+    function addChatMessage(sender, message) {
+      const messageEl = document.createElement('div');
+      messageEl.className = `my-2 flex justify-${sender === 'user' ? 'end' : 'start'} opacity-0`;
+      
+      const bubble = document.createElement('div');
+      bubble.className = sender === 'user' 
+        ? 'max-w-[80%] p-3 rounded-lg bg-cafeteria-light text-white rounded-br-none shadow-md transform transition-all duration-300'
+        : 'max-w-[80%] p-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-none shadow-md transform transition-all duration-300';
+      bubble.textContent = message;
+      
+      messageEl.appendChild(bubble);
+      chatbotMessages.appendChild(messageEl);
+      
+      // Add entrance animation
+      setTimeout(() => {
+        messageEl.classList.add('animate-message-in');
+        messageEl.style.opacity = '1';
+        if (sender === 'user') {
+          bubble.style.transform = 'translateX(0)';
+        } else {
+          bubble.style.transform = 'translateX(0)';
+        }
+      }, 10);
+      
+      // Add animation style if not already added
+      if (!document.querySelector('#message-animation-style')) {
+        const style = document.createElement('style');
+        style.id = 'message-animation-style';
+        style.textContent = `
+          @keyframes message-in {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
+          .animate-message-in {
+            animation: message-in 0.3s ease-out forwards;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+      
+      // Scroll to bottom
+      chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }
+    
+    function getChatbotResponse(message) {
+      // Check for navigation commands first
+      if (message.toLowerCase().includes('go to menu') || message.toLowerCase().includes('show menu')) {
+        setTimeout(() => {
+          const menuSection = document.getElementById('menu');
+          if (menuSection) {
+            // Make sure menu section is visible
+            menuSection.style.display = 'block';
+            menuSection.classList.remove('hidden');
+            // Scroll to it
+            menuSection.scrollIntoView({ behavior: 'smooth' });
+            // Show toast notification
+            showToast('Navigating to Menu section', 'info');
+          }
+        }, 500);
+        return 'Taking you to our menu section! 🍔';
+      } else if (message.toLowerCase().includes('go to cart') || message.toLowerCase().includes('show cart') || message.toLowerCase().includes('view cart')) {
+        setTimeout(() => {
+          // First make the cart section visible if it's hidden
+          const cartSection = document.getElementById('cart');
+          if (cartSection) {
+            cartSection.style.display = 'block';
+            cartSection.classList.remove('hidden');
+            // Scroll to it
+            cartSection.scrollIntoView({ behavior: 'smooth' });
+            // Show toast notification
+            showToast('Navigating to Cart section', 'info');
+          }
+        }, 500);
+        return 'Taking you to your cart! 🛒';
+      } else if (message.toLowerCase().includes('go to home') || message.toLowerCase().includes('show home')) {
+        setTimeout(() => {
+          const homeSection = document.getElementById('home');
+          if (homeSection) {
+            homeSection.style.display = 'block';
+            homeSection.classList.remove('hidden');
+            // Scroll to it
+            homeSection.scrollIntoView({ behavior: 'smooth' });
+            // Show toast notification
+            showToast('Navigating to Home section', 'info');
+          }
+        }, 500);
+        return 'Taking you to the home page! 🏠';
+      } else if (message.toLowerCase().includes('go to orders') || message.toLowerCase().includes('show orders') || message.toLowerCase().includes('view orders')) {
+        setTimeout(() => {
+          // First make the orders section visible if it's hidden
+          const ordersSection = document.getElementById('orders');
+          if (ordersSection) {
+            ordersSection.style.display = 'block';
+            ordersSection.classList.remove('hidden');
+            // Scroll to it
+            ordersSection.scrollIntoView({ behavior: 'smooth' });
+            // Show toast notification
+            showToast('Navigating to Orders section', 'info');
+          }
+        }, 500);
+        return 'Taking you to your orders! 📋';
+      }
+      
+      // Enhanced rule-based responses with more options
+      if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
+        return 'Hello! How can I help you with the cafeteria today? 😊 You can ask me to navigate to different sections like "Go to menu" or "Show cart".';
+      } else if (message.includes('menu') || message.includes('food') || message.includes('eat')) {
+        return 'Our menu has a variety of options including burgers, pizza, pasta, samosas, and smoothies. Would you like me to take you to the menu section? Just say "Go to menu"! 🍔🍕';
+      } else if (message.includes('hours') || message.includes('timing') || message.includes('open')) {
+        return 'The cafeteria is open from 8:00 AM to 8:00 PM, Monday through Friday, and 10:00 AM to 6:00 PM on weekends. ⏰';
+      } else if (message.includes('order') || message.includes('delivery')) {
+        return 'You can place an order through our app and pick it up at the cafeteria. Just add items to your cart and checkout! Would you like to see your cart? Say "Go to cart"! 🛒';
+      } else if (message.includes('payment') || message.includes('pay')) {
+        return 'We accept cash, credit/debit cards, and mobile payments through our app. 💳 Would you like to see your cart? Say "Go to cart"!';
+      } else if (message.includes('vegetarian') || message.includes('veg')) {
+        return 'Yes, we have many vegetarian options available. They are marked with the "Veg" tag on our menu. 🥗 Would you like me to show you the menu? Say "Go to menu"!';
+      } else if (message.includes('thanks') || message.includes('thank you')) {
+        return 'You\'re welcome! Is there anything else I can help you with? I can navigate you to different sections of the website - just ask! 😊';
+      } else if (message.includes('dark') || message.includes('theme') || message.includes('mode')) {
+        return 'You can toggle between light and dark mode by clicking the sun/moon icon in the top right corner of the page. 🌙☀️';
+      } else if (message.includes('popular') || message.includes('recommend') || message.includes('best')) {
+        return 'Our most popular items are the Classic Burger and Margherita Pizza. They\'re marked with the "Popular" tag! ⭐ Would you like to see the menu? Say "Go to menu"!';
+      } else if (message.includes('price') || message.includes('cost') || message.includes('expensive')) {
+        return 'Our prices range from ₹249 for snacks to ₹699 for main courses. We offer great value for quality food! 💰 Would you like to see the menu? Say "Go to menu"!';
+      } else if (message.includes('special') || message.includes('discount') || message.includes('offer')) {
+        return 'We have daily specials and student discounts! Show your student ID to get 10% off your order. 🎓';
+      } else if (message.includes('allergy') || message.includes('allergic')) {
+        return 'We take allergies seriously. Please inform our staff about any allergies, and we\'ll ensure your food is prepared safely. 🔍';
+      } else if (message.includes('help') || message.includes('navigate') || message.includes('commands')) {
+        return 'I can help you navigate the website! Try these commands: "Go to menu", "Go to cart", "Go to home", or "Go to orders". What would you like to do? 🧭';
+      } else {
+        return 'I\'m not sure I understand. You can ask about our menu, hours, ordering process, or say "help" to see navigation commands. 🤔';
+      }
+    }
+    
+    // Enhanced Navigation with animations
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        // Add click animation to the anchor
+        this.classList.add('animate-pulse');
+        setTimeout(() => {
+          this.classList.remove('animate-pulse');
+        }, 500);
+        
+        const targetId = this.getAttribute('href').substring(1);
+        
+        // If it's a section in the main content
+        if (targetId === 'home' || targetId === 'menu' || targetId === 'cart' || targetId === 'orders') {
+          // Hide all sections with fade-out animation
+          menuSections.forEach(section => {
+            if (section.id !== targetId && !section.classList.contains('hidden')) {
+              // Add fade-out animation
+              section.style.opacity = '0';
+              section.style.transition = 'opacity 0.3s ease';
+              setTimeout(() => {
+                section.classList.add('hidden');
+                section.style.opacity = ''; // Reset opacity
+                section.style.transition = ''; // Reset transition
+              }, 300);
+            }
+          });
+          
+          // Show the target section with fade-in animation
+          const targetSection = document.getElementById(targetId);
+          if (targetSection) {
+            // Prepare for fade-in
+            targetSection.style.opacity = '0';
+            targetSection.classList.remove('hidden');
+            
+            // Trigger reflow to ensure transition works
+            void targetSection.offsetWidth;
+            
+            // Apply fade-in
+            targetSection.style.transition = 'opacity 0.5s ease';
+            targetSection.style.opacity = '1';
+            
+            // Scroll to top of the section
+            window.scrollTo({
+              top: targetSection.offsetTop - 80,
+              behavior: 'smooth'
+            });
+            
+            // Trigger animations for elements in the new section
+            const animatedElements = targetSection.querySelectorAll('.animate-on-scroll');
+            setTimeout(() => {
+              animatedElements.forEach((element, index) => {
+                // Add staggered delay based on data-delay attribute or index
+                const delay = element.dataset.delay ? parseFloat(element.dataset.delay) * 1000 : index * 100;
+                setTimeout(() => {
+                  element.classList.add('animated');
+                }, delay);
+              });
+            }, 300); // Start after scroll completes
+          }
+        } else {
+          // For other anchors, just scroll to the element with highlight animation
+          const targetElement = document.getElementById(targetId);
+          if (targetElement) {
+            // Highlight the target element briefly
+            targetElement.classList.add('highlight-target');
+            
+            // Add highlight animation style if not already added
+            if (!document.querySelector('#highlight-animation-style')) {
+              const style = document.createElement('style');
+              style.id = 'highlight-animation-style';
+              style.textContent = `
+                @keyframes highlight-pulse {
+                  0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4); }
+                  70% { box-shadow: 0 0 0 10px rgba(52, 211, 153, 0); }
+                  100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+                }
+                .highlight-target {
+                  animation: highlight-pulse 1.5s ease-out;
+                  position: relative;
+                  z-index: 1;
+                }
+              `;
+              document.head.appendChild(style);
+            }
+            
+            window.scrollTo({
+              top: targetElement.offsetTop - 80,
+              behavior: 'smooth'
+            });
+            
+            // Remove highlight class after animation completes
+            setTimeout(() => {
+              targetElement.classList.remove('highlight-target');
+            }, 1500);
+          }
+        }
+        
+        // Close mobile menu if open with slide-up animation
+        if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+          mobileMenu.style.height = mobileMenu.scrollHeight + 'px';
+          mobileMenu.style.transition = 'height 0.3s ease, opacity 0.3s ease';
+          
+          // Trigger reflow
+          void mobileMenu.offsetHeight;
+          
+          // Apply slide-up animation
+          mobileMenu.style.height = '0';
+          mobileMenu.style.opacity = '0';
+          
+          setTimeout(() => {
+            mobileMenu.classList.add('hidden');
+            mobileMenu.style.height = '';
+            mobileMenu.style.opacity = '';
+            mobileMenu.style.transition = '';
+          }, 300);
+        }
+      });
+    });
+    
+    // Enhanced Add to Cart with checkboxes
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize menu item checkboxes
+      const initMenuCheckboxes = function() {
+        // Add event listeners to all menu item checkboxes
+        document.querySelectorAll('.menu-item-checkbox').forEach(checkbox => {
+          // Remove existing event listeners by cloning the checkbox
+          const newCheckbox = checkbox.cloneNode(true);
+          checkbox.parentNode.replaceChild(newCheckbox, checkbox);
+          
+          // Add new event listener
+          newCheckbox.addEventListener('change', function() {
+            // Get item details from data attributes
+            const itemName = this.getAttribute('data-name') || 'Food Item';
+            const itemPrice = parseFloat(this.getAttribute('data-price') || '499');
+            const itemImage = this.getAttribute('data-image') || '';
+            
+            if (this.checked) {
+              console.log(`Adding to cart: ${itemName}, ₹${itemPrice}, ${itemImage}`);
+              // Add to cart
+              addToCart(itemName, itemPrice, itemImage);
+              // Show confirmation toast
+              showToast(`${itemName} added to cart!`, 'success');
+            } else {
+              console.log(`Removing from cart: ${itemName}`);
+              // Remove from cart
+              removeFromCart(itemName);
+              // Show confirmation toast
+              showToast(`${itemName} removed from cart!`, 'info');
+            }
+          });
+        });
+        
+        // Check if items are in cart and update checkboxes accordingly
+        updateCheckboxesFromCart();
+      };
+      
+      // Function to update checkboxes based on cart contents
+      function updateCheckboxesFromCart() {
+        const cart = JSON.parse(localStorage.getItem('cafeteria-cart')) || [];
+        
+        // Uncheck all checkboxes first
+        document.querySelectorAll('.menu-item-checkbox').forEach(checkbox => {
+          checkbox.checked = false;
+        });
+        
+        // Check the checkboxes for items in cart
+        cart.forEach(item => {
+          const checkboxes = document.querySelectorAll(`.menu-item-checkbox[data-name="${item.name}"]`);
+          checkboxes.forEach(checkbox => {
+            checkbox.checked = true;
+          });
+        });
+      }
+      
+      // Function to remove item from cart
+      function removeFromCart(name) {
+        let cart = JSON.parse(localStorage.getItem('cafeteria-cart')) || [];
+        cart = cart.filter(item => item.name !== name);
+        localStorage.setItem('cafeteria-cart', JSON.stringify(cart));
+        updateCartBadge();
+      }
+      
+      // Function to show toast notification
+      function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 ${type === 'success' ? 'bg-green-500' : 'bg-blue-500'} text-white`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        // Remove toast after 3 seconds
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+          setTimeout(() => {
+            document.body.removeChild(toast);
+          }, 500);
+        }, 3000);
+      }
+      
+      // Run immediately and also after a short delay to ensure all elements are loaded
+      initMenuCheckboxes();
+      setTimeout(initMenuCheckboxes, 1000);
+      
+      // Listen for cart updates to keep checkboxes in sync
+      window.addEventListener('storage', function(e) {
+        if (e.key === 'cafeteria-cart') {
+          updateCheckboxesFromCart();
+        }
+      });
+    });
+    
+    // Create and show confirmation modal
+    function showConfirmationModal(itemName, itemImage) {
+      // Create modal if it doesn't exist
+      let modalOverlay = document.querySelector('.modal-overlay');
+      if (!modalOverlay) {
+        modalOverlay = document.createElement('div');
+        modalOverlay.classList.add('modal-overlay');
+        document.body.appendChild(modalOverlay);
+        
+        const modalContent = document.createElement('div');
+        modalContent.classList.add('modal-content');
+        modalOverlay.appendChild(modalContent);
+        
+        // Close modal when clicking outside
+        modalOverlay.addEventListener('click', function(e) {
+          if (e.target === modalOverlay) {
+            closeModal();
+          }
+        });
+      }
+      
+      const modalContent = modalOverlay.querySelector('.modal-content');
+      modalContent.innerHTML = `
+        <div class="text-center">
+          <div class="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600 dark:text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          ${itemImage ? `<img src="${itemImage}" alt="${itemName}" class="w-24 h-24 object-cover rounded-full mx-auto mb-4 border-4 border-green-200 dark:border-green-800">` : ''}
+          <h3 class="text-xl font-bold mb-2 dark:text-white">${itemName} added to cart!</h3>
+          <p class="text-gray-600 dark:text-gray-300 mb-4">Your item has been added to the cart.</p>
+          <div class="flex justify-center gap-4">
+            <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-all" id="continue-shopping">Continue Shopping</button>
+            <button class="px-4 py-2 bg-cafeteria-light text-white rounded-lg font-medium hover:bg-cafeteria-dark transition-all animate-pulse" id="view-cart">View Cart</button>
+          </div>
+        </div>
+      `;
+      
+      // Show modal with animation
+      modalOverlay.classList.add('active');
+      
+      // Add event listeners to buttons
+      const continueShoppingBtn = document.getElementById('continue-shopping');
+      const viewCartBtn = document.getElementById('view-cart');
+      
+      continueShoppingBtn.addEventListener('click', closeModal);
+      
+      viewCartBtn.addEventListener('click', function() {
+        closeModal();
+        // Navigate to cart section
+        const cartSection = document.getElementById('cart');
+        if (cartSection) {
+          // Show cart section and hide others
+          menuSections.forEach(section => {
+            section.classList.add('hidden');
+          });
+          cartSection.classList.remove('hidden');
+          
+          // Scroll to cart section
+          window.scrollTo({
+            top: cartSection.offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }
+      });
+    }
+    
+    function closeModal() {
+      const modalOverlay = document.querySelector('.modal-overlay');
+      if (modalOverlay) {
+        modalOverlay.classList.remove('active');
+      }
+    }
+    
+    // Initialize menu filters
+    function initMenuFilters() {
+      const filterButtons = document.querySelectorAll('.menu-filter-btn');
+      const menuItems = document.querySelectorAll('.food-item-container');
+      
+      // Ensure menu section is visible
+      const menuSection = document.getElementById('menu');
+      if (menuSection && menuSection.classList.contains('hidden')) {
+        menuSection.classList.remove('hidden');
+      }
+      
+      // Make sure all menu items are visible initially
+      menuItems.forEach(item => {
+        item.style.display = 'block';
+      });
+      
+      // Add category data attributes to menu items if they don't already have them
+      if (!menuItems[0].hasAttribute('data-category')) menuItems[0].setAttribute('data-category', 'main'); // Burger
+      if (!menuItems[1].hasAttribute('data-category')) menuItems[1].setAttribute('data-category', 'main'); // Pizza
+      if (!menuItems[2].hasAttribute('data-category')) menuItems[2].setAttribute('data-category', 'beverage'); // Cappuccino
+      if (!menuItems[3].hasAttribute('data-category')) menuItems[3].setAttribute('data-category', 'snack'); // Samosa
+      if (!menuItems[4].hasAttribute('data-category')) menuItems[4].setAttribute('data-category', 'main'); // Pasta
+      if (!menuItems[5].hasAttribute('data-category')) menuItems[5].setAttribute('data-category', 'beverage'); // Smoothie
+      if (menuItems[6] && !menuItems[6].hasAttribute('data-category')) menuItems[6].setAttribute('data-category', 'main'); // Paneer Masala
+      
+      // Add click event to filter buttons
+      filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Remove active class from all buttons
+          filterButtons.forEach(btn => {
+            btn.classList.remove('bg-cafeteria-light', 'text-white');
+            btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-200');
+          });
+          
+          // Add active class to clicked button
+          this.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-200');
+          this.classList.add('bg-cafeteria-light', 'text-white');
+          
+          const filter = this.getAttribute('data-filter');
+          console.log('Filter selected:', filter);
+          
+          // Show/hide menu items based on filter
+          menuItems.forEach(item => {
+            const category = item.getAttribute('data-category');
+            if (filter === 'all' || category === filter) {
+              item.style.display = 'block';
+            } else {
+              item.style.display = 'none';
+            }
+          });
+        });
+      });
+      
+      // Set 'All Items' as default active filter
+      const allFilterBtn = document.querySelector('.menu-filter-btn[data-filter="all"]');
+      if (allFilterBtn) {
+        allFilterBtn.click();
+      }
+    }
+    
+    // Call scroll animations and initialize menu filters on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Make sure menu section and its elements are visible
+      const menuSection = document.getElementById('menu');
+      if (menuSection) {
+        menuSection.style.display = 'block';
+        menuSection.classList.remove('hidden');
+        
+        // Make menu heading visible
+        const menuHeading = menuSection.querySelector('.text-center');
+        if (menuHeading) {
+          menuHeading.style.display = 'block';
+        }
+        
+        // Make menu filters visible
+        const menuFilters = menuSection.querySelector('.flex-wrap');
+        if (menuFilters) {
+          menuFilters.style.display = 'flex';
+        }
+        
+        // Make search filters visible
+        const searchFilters = menuSection.querySelector('.max-w-md');
+        if (searchFilters) {
+          searchFilters.style.display = 'block';
+        }
+      }
+      
+      initScrollAnimations();
+      setTimeout(initScrollAnimations, 500);
+      initMenuFilters();
+    });
+    
+    // Event Listeners
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', toggleTheme);
+    }
+    
+    if (mobileMenuBtn && mobileMenu) {
+      mobileMenuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+    }
+    
+    if (chatbotToggle) {
+      chatbotToggle.addEventListener('click', function() {
+        // If chatbot window doesn't exist, create it
+        if (!document.getElementById('chatbot-window')) {
+          createChatbotWindow();
+        } else {
+          // Toggle existing chatbot window
+          const chatbotWindow = document.getElementById('chatbot-window');
+          chatbotWindow.classList.toggle('hidden');
+          const chatbotMessages = chatbotWindow.querySelector('.overflow-y-auto');
+          if (chatbotMessages) {
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+          }
+        }
+      });
+    }
+    
+    // Create chatbot window dynamically
+    function createChatbotWindow() {
+      const chatbotWindow = document.createElement('div');
+      chatbotWindow.id = 'chatbot-window';
+      chatbotWindow.className = 'fixed bottom-20 right-4 w-80 md:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-50 transition-all duration-300 transform origin-bottom-right border border-gray-200 dark:border-gray-700';
+      
+      chatbotWindow.innerHTML = `
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-cafeteria-light text-white rounded-t-lg">
+          <h3 class="font-bold">Cafeteria Chat Support</h3>
+          <button id="chatbot-close" class="text-white hover:text-gray-200 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="overflow-y-auto p-4 h-80 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+          <div class="chat-message bot">
+            <div class="flex items-end">
+              <div class="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-2 items-start">
+                <div>
+                  <span class="px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white">
+                    Hello! Welcome to College Cafeteria. How can I help you today?
+                  </span>
+                </div>
+              </div>
+              <img src="https://cdn-icons-png.flaticon.com/128/2276/2276931.png" alt="Bot" class="w-6 h-6 rounded-full order-1">
+            </div>
+          </div>
+        </div>
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+          <form id="chatbot-form" class="flex space-x-2">
+            <input type="text" id="chatbot-input" class="chatbot-input rounded-full py-2 px-4 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white flex-grow transition-colors duration-300" placeholder="Type your message...">
+            <button type="submit" class="bg-cafeteria-light text-white rounded-full p-2 hover:bg-cafeteria-dark transition-colors duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      `;
+      
+      document.body.appendChild(chatbotWindow);
+      
+      // Add event listeners to new elements
+      const chatbotToggle = document.getElementById('chatbot-toggle');
+      const chatbotClose = document.getElementById('chatbot-close');
+      const footerChatLink = document.getElementById('footer-chat-link');
+      const chatbotForm = document.getElementById('chatbot-form');
+      
+      if (chatbotToggle) {
+        chatbotToggle.addEventListener('click', function() {
+          const chatbotWindow = document.getElementById('chatbot-window');
+          chatbotWindow.classList.toggle('hidden');
+        });
+      }
+      
+      if (chatbotClose) {
+        chatbotClose.addEventListener('click', function() {
+          document.getElementById('chatbot-window').classList.add('hidden');
+        });
+      }
+      
+      // Link footer chat link to chatbot
+      if (footerChatLink) {
+        footerChatLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          const chatbotWindow = document.getElementById('chatbot-window');
+          chatbotWindow.classList.remove('hidden');
+          // Scroll to the bottom of the page to ensure the chat is visible
+          window.scrollTo(0, document.body.scrollHeight);
+        });
+      }
+      
+      if (chatbotForm) {
+        chatbotForm.addEventListener('submit', handleChatbotSubmit);
+      }
+    }
+    
+    // Handle chatbot form submission
+    const chatbotForm = document.querySelector('#chatbot-window form') || 
+                        document.querySelector('#chatbot-window .flex');
+    
+    if (chatbotForm) {
+      const chatbotSendBtn = chatbotForm.querySelector('button');
+      const chatbotInput = chatbotForm.querySelector('input[type="text"]');
+      
+      if (chatbotSendBtn) {
+        chatbotSendBtn.addEventListener('click', handleChatbotSubmit);
+      }
+      
+      if (chatbotInput) {
+        chatbotInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleChatbotSubmit();
+          }
+        });
+      }
+    }
+
+    // Cart Functionality
+    function renderCart() {
+      const emptyCartMessage = document.getElementById('empty-cart-message');
+      const cartItemsContainer = document.getElementById('cart-items-container');
+      const cartItemsList = document.getElementById('cart-items');
+      const subtotalEl = document.getElementById('cart-subtotal');
+      const taxEl = document.getElementById('cart-tax');
+      const totalEl = document.getElementById('cart-total');
+      
+      // Make cart section visible if it's hidden
+      const cartSection = document.getElementById('cart');
+      if (cartSection && cartSection.classList.contains('hidden')) {
+        cartSection.classList.remove('hidden');
+      }
+      
+      // Clear previous items
+      if (cartItemsList) {
+        cartItemsList.innerHTML = '';
+      }
+      
+      // Show/hide appropriate elements based on cart state
+      if (cart.length === 0) {
+        if (emptyCartMessage) emptyCartMessage.classList.remove('hidden');
+        if (cartItemsContainer) cartItemsContainer.classList.add('hidden');
+        return;
+      } else {
+        if (emptyCartMessage) emptyCartMessage.classList.add('hidden');
+        if (cartItemsContainer) cartItemsContainer.classList.remove('hidden');
+      }
+      
+      // Calculate totals
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const tax = subtotal * 0.05; // 5% tax
+      const total = subtotal + tax;
+      
+      // Update summary
+      if (subtotalEl) subtotalEl.textContent = `₹${subtotal.toFixed(2)}`;
+      if (taxEl) taxEl.textContent = `₹${tax.toFixed(2)}`;
+      if (totalEl) totalEl.textContent = `₹${total.toFixed(2)}`;
+      
+      // Render cart items
+      cart.forEach(item => {
+        // Ensure item has an ID
+        if (!item.id) {
+          item.id = item.name.replace(/\s+/g, '-').toLowerCase() + '-' + Date.now().toString(36);
+        }
+        
+        const itemEl = document.createElement('div');
+        itemEl.className = 'p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between';
+        
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'flex items-center mb-3 sm:mb-0';
+        
+        let imageHtml = '';
+        if (item.image) {
+          imageHtml = `<img src="${item.image}" alt="${item.name}" class="h-16 w-16 object-cover rounded">`;
+        } else {
+          // Fallback for items without images
+          const colors = {
+            'samosa': 'yellow',
+            'pizza': 'red',
+            'coffee': 'amber',
+            'burger': 'orange'
+          };
+          
+          const itemKey = Object.keys(colors).find(key => item.name.toLowerCase().includes(key)) || 'gray';
+          const color = colors[itemKey] || 'gray';
+          
+          imageHtml = `<div class="h-16 w-16 bg-${color}-500 flex items-center justify-center text-white rounded">
+            ${item.name.charAt(0)}
+          </div>`;
+        }
+        
+        imageContainer.innerHTML = `
+          ${imageHtml}
+          <div class="ml-4">
+            <h3 class="font-medium dark:text-white">${item.name}</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">₹${item.price.toFixed(2)} each</p>
+          </div>
+        `;
+        
+        const actionsContainer = document.createElement('div');
+        actionsContainer.className = 'flex items-center justify-between sm:justify-end';
+        actionsContainer.innerHTML = `
+          <div class="flex items-center border dark:border-gray-600 rounded-lg overflow-hidden">
+            <button class="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-white transition-colors duration-300" data-action="decrease" data-item-id="${item.id}">-</button>
+            <span class="px-4 py-1 dark:text-white">${item.quantity}</span>
+            <button class="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-white transition-colors duration-300" data-action="increase" data-item-id="${item.id}">+</button>
+          </div>
+          
+          <button class="ml-4 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-300" data-action="remove" data-item-id="${item.id}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        `;
+        
+        itemEl.appendChild(imageContainer);
+        itemEl.appendChild(actionsContainer);
+        cartItemsList.appendChild(itemEl);
+      });
+      
+      // Remove any existing event listeners to prevent duplicates
+      const buttons = document.querySelectorAll('[data-action]');
+      buttons.forEach(button => {
+        const clonedButton = button.cloneNode(true);
+        button.parentNode.replaceChild(clonedButton, button);
+      });
+      
+      // Add event listeners for cart item actions
+      document.querySelectorAll('[data-action]').forEach(button => {
+        button.addEventListener('click', handleCartAction);
+      });
+      
+      // Save updated cart to localStorage
+      localStorage.setItem('cafeteria-cart', JSON.stringify(cart));
+    }
+    
+    // Handle cart actions (increase, decrease, remove)
+    function handleCartAction(e) {
+      // Get the action from the clicked element or its parent if the element doesn't have the data attribute
+      let target = e.target;
+      let action = target.dataset.action;
+      let itemId = target.dataset.itemId;
+      
+      // If the target doesn't have the action, try to find a parent with the action
+      if (!action) {
+        let parent = target.closest('[data-action]');
+        if (parent) {
+          action = parent.dataset.action;
+          itemId = parent.dataset.itemId;
+        }
+      }
+      
+      if (!action || !itemId) return;
+      
+      const cartItem = cart.find(item => item.id === itemId);
+      if (!cartItem) return;
+      
+      if (action === 'increase') {
+        cartItem.quantity += 1;
+        showToast(`Added one more ${cartItem.name} to your cart`, 'success');
+      } else if (action === 'decrease') {
+        if (cartItem.quantity > 1) {
+          cartItem.quantity -= 1;
+          showToast(`Removed one ${cartItem.name} from your cart`, 'info');
+        } else {
+          cart = cart.filter(item => item.id !== itemId);
+          showToast(`Removed ${cartItem.name} from your cart`, 'info');
+        }
+      } else if (action === 'remove') {
+        cart = cart.filter(item => item.id !== itemId);
+        showToast(`Removed ${cartItem.name} from your cart`, 'info');
+      }
+      
+      localStorage.setItem('cafeteria-cart', JSON.stringify(cart));
+      updateCartBadge();
+      renderCart();
+      updateCheckboxesFromCart();
+    }
+    
+    function placeOrder() {
+      if (cart.length === 0) return;
+      
+      // Create order object
+      const order = {
+        id: generateOrderId(),
+        items: [...cart],
+        total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) * 1.05, // Including tax
+        status: 'preparing',
+        timestamp: new Date().toISOString()
+      };
+      
+      // Get existing orders or initialize empty array
+      const orders = JSON.parse(localStorage.getItem('cafeteria-orders') || '[]');
+      orders.push(order);
+      
+      // Save orders
+      localStorage.setItem('cafeteria-orders', JSON.stringify(orders));
+      
+      // Clear cart
+      cart = [];
+      localStorage.setItem('cafeteria-cart', JSON.stringify(cart));
+      updateCartBadge();
+      
+      // Show confirmation
+      const confirmationModal = document.getElementById('order-confirmation');
+      if (confirmationModal) {
+        confirmationModal.classList.remove('hidden');
+      }
+    }
+    
+    function generateOrderId() {
+      return 'ORD-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+    
+    // Place order button
+    const placeOrderBtn = document.getElementById('place-order-btn');
+    if (placeOrderBtn) {
+      placeOrderBtn.addEventListener('click', placeOrder);
+    }
+    
+    // Order confirmation modal buttons
+    const viewOrdersBtn = document.getElementById('view-orders-btn');
+    const closeConfirmationBtn = document.getElementById('close-confirmation-btn');
+    const orderConfirmation = document.getElementById('order-confirmation');
+    
+    if (viewOrdersBtn) {
+      viewOrdersBtn.addEventListener('click', () => {
+        if (orderConfirmation) orderConfirmation.classList.add('hidden');
+        
+        // Hide all sections
+        menuSections.forEach(section => {
+          section.classList.add('hidden');
+        });
+        
+        // Show orders section
+        const ordersSection = document.getElementById('orders');
+        if (ordersSection) {
+          ordersSection.classList.remove('hidden');
+          // Scroll to top
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        }
+      });
+    }
+    
+    if (closeConfirmationBtn && orderConfirmation) {
+      closeConfirmationBtn.addEventListener('click', () => {
+        orderConfirmation.classList.add('hidden');
+      });
+    }
+    
+    // Orders Functionality
+    function renderOrders() {
+      const emptyOrdersMessage = document.getElementById('empty-orders-message');
+      const ordersContainer = document.getElementById('orders-container');
+      
+      // Get orders from localStorage
+      const orders = JSON.parse(localStorage.getItem('cafeteria-orders') || '[]');
+      
+      // Show/hide appropriate elements based on orders state
+      if (orders.length === 0) {
+        if (emptyOrdersMessage) emptyOrdersMessage.classList.remove('hidden');
+        if (ordersContainer) ordersContainer.classList.add('hidden');
+        return;
+      } else {
+        if (emptyOrdersMessage) emptyOrdersMessage.classList.add('hidden');
+        if (ordersContainer) ordersContainer.classList.remove('hidden');
+      }
+      
+      // Clear previous orders
+      if (ordersContainer) {
+        ordersContainer.innerHTML = '';
+      }
+      
+      // Sort orders by timestamp (newest first)
+      orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      
+      // Render each order
+      orders.forEach(order => {
+        const orderEl = document.createElement('div');
+        orderEl.className = 'bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-colors duration-300 animate-on-scroll';
+        orderEl.setAttribute('data-animation', 'fade-up');
+        
+        // Format date
+        const orderDate = new Date(order.timestamp);
+        const formattedDate = orderDate.toLocaleString();
+        
+        // Order header
+        const headerEl = document.createElement('div');
+        headerEl.className = 'p-4 border-b dark:border-gray-700 flex justify-between items-center';
+        headerEl.innerHTML = `
+          <div>
+            <span class="text-sm text-gray-500 dark:text-gray-400">Order ID: ${order.id}</span>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Placed at: ${formattedDate}</p>
+          </div>
+          <span class="px-3 py-1 rounded-full text-sm font-medium ${order.status === 'preparing' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100' : 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100'}">
+            ${order.status === 'preparing' ? 'Preparing' : 'Ready for Pickup'}
+          </span>
+        `;
+        
+        // Order items
+        const itemsEl = document.createElement('div');
+        itemsEl.className = 'p-4';
+        itemsEl.innerHTML = `<h3 class="font-medium mb-2 dark:text-white">Order Items</h3>`;
+        
+        const itemsList = document.createElement('ul');
+        itemsList.className = 'divide-y dark:divide-gray-700';
+        
+        order.items.forEach(item => {
+          const itemEl = document.createElement('li');
+          itemEl.className = 'py-2 flex justify-between';
+          
+          // Determine color based on item name
+          const colors = {
+            'samosa': 'yellow',
+            'pizza': 'red',
+            'coffee': 'amber',
+            'burger': 'orange',
+            'chicken': 'red',
+            'paneer': 'pink'
+          };
+          
+          const itemKey = Object.keys(colors).find(key => item.name.toLowerCase().includes(key)) || 'gray';
+          const color = colors[itemKey] || 'gray';
+          
+          itemEl.innerHTML = `
+            <div class="flex items-center">
+              <div class="h-10 w-10 bg-${color}-500 flex items-center justify-center text-white rounded mr-3">
+                ${item.name.charAt(0)}
+              </div>
+              <span class="dark:text-white">${item.name} × ${item.quantity}</span>
+            </div>
+            <span class="dark:text-white">₹${(item.price * item.quantity).toFixed(2)}</span>
+          `;
+          
+          itemsList.appendChild(itemEl);
+        });
+        
+        itemsEl.appendChild(itemsList);
+        
+        // Order total
+        const totalEl = document.createElement('div');
+        totalEl.className = 'p-4 bg-gray-50 dark:bg-gray-700 border-t dark:border-gray-600 transition-colors duration-300';
+        totalEl.innerHTML = `
+          <div class="flex justify-between font-bold">
+            <span class="dark:text-white">Total:</span>
+            <span class="dark:text-white">₹${order.total.toFixed(2)}</span>
+          </div>
+        `;
+        
+        // Assemble order element
+        orderEl.appendChild(headerEl);
+        orderEl.appendChild(itemsEl);
+        orderEl.appendChild(totalEl);
+        
+        ordersContainer.appendChild(orderEl);
+      });
+    }
+    
+    // Initialize cart rendering
+    renderCart();
+    
+    // Initialize orders rendering
+    renderOrders();
+    
+    // Show menu by default
+    document.getElementById('menu').classList.remove('hidden');
+  </script>
+</body>
+</html>
